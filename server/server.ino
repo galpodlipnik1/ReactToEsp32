@@ -7,8 +7,8 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_AM2320.h>
 
-const char* ssid = "Podlipnik_GOSTI";
-const char* password = "12345678";
+const char* ssid = "Vegova RVP4";
+const char* password = "Vegova_RVP4";
 
 bool ledStatus = false;
 
@@ -50,6 +50,7 @@ void setup(void) {
 
   WiFi.begin(ssid, password);
   Adafruit_AM2320 AM2320 = Adafruit_AM2320();
+  server.enableCORS();
 
   updateTH();
   Serial.println("");
@@ -76,20 +77,26 @@ void setup(void) {
   server.on("/ledon", []() {
     digitalWrite(led, 1);
     ledStatus = true;
+
+    Serial.println("led on");
+    server.send(200, "text/plain", "Led turned on");
   });
 
   server.on("/ledoff", []() {
     digitalWrite(led, 0);
     ledStatus = false;
+
+    Serial.println("led off");
+    server.send(200, "text/plain", "Led turned off");
   });
 
   server.on("/ledstatus", []() {
     StaticJsonDocument<100> status;
     
     if(ledStatus) {
-      status["status"] = true;
+      status["led"] = true;
     } else {
-      status["status"] = false;
+      status["led"] = false;
     }
 
     String response;

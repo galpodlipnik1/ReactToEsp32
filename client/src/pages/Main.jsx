@@ -3,19 +3,27 @@ import { getLedStatus, ledOff, ledOn, getTempAndHumidity } from '../actions/inde
 
 
 const Main = () => {
-  const [ledStatus, setLedStatus] = useState(false);
+  const [ledStatus, setLedStatus] = useState(null);
   const [TempHumidity, setTempHumidity] = useState({temp: 0, humidity: 0});
 
   useEffect(() => {
-    const getLedStatusFnc = async () => {
-      const data = await getLedStatus();
-      const TH = await getTempAndHumidity();
-      setLedStatus(data);
-      setTempHumidity({temp: TH.temp, humidity: TH.humidity});
-    }
+    
+    (async () => {
+      getLedStatus().then((res) => {
+        setLedStatus(res.data.led);
+      });
+      
+      getTempAndHumidity().then((res) => {
+        setTempHumidity({temp: res.data.temp, humidity: res.data.humidity});
+      });
+    }) ();
 
-    getLedStatusFnc();
   }, []);
+
+  useEffect(() => {
+    console.log('Status: ' + ledStatus);
+    console.log('Temp&Hum: ' + TempHumidity.humidity + ',' + TempHumidity.temp);
+  }, [ledStatus, TempHumidity]);
 
   const handleLedOn = async () => {
     await ledOn();
@@ -45,11 +53,11 @@ const Main = () => {
       <div className='flex w-4/12 flex-col mt-5'>
         <div className='flex justify-between flex-row'>
           <h3>Temperature:</h3>
-          <p className='text-black underline ml-1'>{TempHumidity.temp} °C</p>
+          <p className='text-black underline ml-1'>{TempHumidity.temp || 0} °C</p>
         </div>
         <div className='flex justify-between flex-row mt-10'>
           <h3>Humidity:</h3>
-          <p className='text-black underline ml-1'>{TempHumidity.humidity} %</p>
+          <p className='text-black underline ml-1'>{TempHumidity.humidity || 0} %</p>
         </div>
       </div> 
     </div>
