@@ -4,8 +4,11 @@
 #include <ESPmDNS.h>
 #include "ArduinoJson.h"
 
-#include <Adafruit_Sensor.h>
-#include <Adafruit_AM2320.h>
+#include "DHT.h"
+
+#define DHTPIN 16
+
+#define DHTTYPE DHT22
 
 const char* ssid = "Vegova RVP4";
 const char* password = "Vegova_RVP4";
@@ -16,9 +19,9 @@ float Temp;
 float Humidity;
 
 WebServer server(80);
-Adafruit_AM2320 AM2320 = Adafruit_AM2320();
+DHT dht(DHTPIN, DHTTYPE);
 
-const int led = 13;
+const int led = 17;
 
 void handleRoot() {
   server.send(200, "text/plain", "hello from esp32!");
@@ -40,8 +43,8 @@ void handleNotFound() {
 }
 
 void updateTH() {
-  Temp = AM2320.readTemperature();
-  Humidity = AM2320.readHumidity();
+  Temp = dht.readTemperature();
+  Humidity = dht.readHumidity();
 }
 
 void setup(void) {
@@ -49,7 +52,7 @@ void setup(void) {
   Serial.begin(115200);
 
   WiFi.begin(ssid, password);
-  Adafruit_AM2320 AM2320 = Adafruit_AM2320();
+  dht.begin();
   server.enableCORS();
 
   updateTH();
@@ -79,6 +82,8 @@ void setup(void) {
     ledStatus = true;
 
     Serial.println("led on");
+
+    server.sendHeader("Access-Control-Allow-Origin","*");
     server.send(200, "text/plain", "Led turned on");
   });
 
@@ -87,6 +92,8 @@ void setup(void) {
     ledStatus = false;
 
     Serial.println("led off");
+
+    server.sendHeader("Access-Control-Allow-Origin","*");
     server.send(200, "text/plain", "Led turned off");
   });
 
@@ -102,6 +109,7 @@ void setup(void) {
     String response;
     serializeJson(status, response);
 
+    server.sendHeader("Access-Control-Allow-Origin","*");
     server.send(200, "application/json", response);
   });
 
@@ -114,6 +122,7 @@ void setup(void) {
     String response;
     serializeJson(reads, response);
     
+    server.sendHeader("Access-Control-Allow-Origin","*");
     server.send(200, "application/json", response);
   });
 

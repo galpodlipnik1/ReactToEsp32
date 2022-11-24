@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://192.168.116.95' });
+const API = axios.create();
 
 export const ledOff = () => API.get('/ledoff');
 
